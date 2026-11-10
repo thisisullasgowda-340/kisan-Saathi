@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KisanSaathi – Smarter Farming. Healthier Crops. Better Harvests.</title>
+<style>
+:root{--g:#2E7D32;--g2:#A5D6A7;--bg:#F8FAF5;--card:#fff;--tx:#1b2a1c;--mut:#5c6b5d;--bd:#dfe6da;--warn:#b26a00;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111a12;--card:#1a251b;--tx:#e8f0e6;--mut:#9fb19f;--bd:#2c3b2d;--g:#66bb6a;--g2:#2E7D32;color-scheme:dark}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+header{background:var(--g);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) header{background:#1f5a24}}
+header b{font-size:20px}header small{display:block;opacity:.85;font-size:12px}
+.st{font-size:13px;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:99px}
+main{max-width:760px;margin:0 auto;padding:16px}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:6}
+nav button{flex:1;background:none;border:0;padding:8px 2px;font:inherit;font-size:12px;color:var(--mut);cursor:pointer}
+nav button span{display:block;font-size:22px}nav button.on{color:var(--g);font-weight:700}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin:0 0 14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+h2{margin:4px 0 12px;font-size:22px}h3{margin:14px 0 4px;font-size:16px;color:var(--g)}p{margin:4px 0}
+.btn{background:var(--g);color:#fff;border:0;border-radius:12px;padding:13px 18px;font:inherit;font-weight:600;cursor:pointer;display:inline-block;text-decoration:none;text-align:center}
+.btn.s{background:var(--g2);color:#10301a}.btn.o{background:none;border:1.5px solid var(--g);color:var(--g)}.btn.d{background:var(--err)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}.btn.b{display:block;width:100%}
+:focus-visible{outline:3px solid #f9a825;outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.crop{background:var(--card);border:2px solid var(--bd);border-radius:14px;padding:14px 6px;text-align:center;font:inherit;color:inherit;cursor:pointer}
+.crop.on{border-color:var(--g);background:var(--g2);color:#10301a}.crop span{display:block;font-size:38px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{text-align:center}.stat b{display:block;font-size:26px;color:var(--g)}.stat small{color:var(--mut)}
+input,select,textarea{width:100%;font:inherit;padding:11px;border:1.5px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);margin:4px 0 10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:700;background:var(--g2);color:#10301a}
+.badge.demo{background:#ffe082;color:#5d4000}.badge.sev{background:#ffcdd2;color:#7f1d1d}.badge.ok{background:#c8e6c9;color:#1b5e20}
+.note{border-left:4px solid var(--warn);background:rgba(255,193,7,.14);padding:10px 12px;border-radius:8px;margin:10px 0;font-size:15px}
+.mut{color:var(--mut);font-size:14px}.thumb{width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin:8px 0}
+.hi{display:flex;gap:12px;align-items:center;cursor:pointer}.hi img,.hi .ph{width:64px;height:64px;border-radius:10px;object-fit:cover;background:var(--g2);display:grid;place-items:center;font-size:28px}
+details{border:1px solid var(--bd);border-radius:12px;padding:10px 14px;margin:0 0 10px;background:var(--card)}summary{cursor:pointer;font-weight:600}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:#222;color:#fff;padding:10px 16px;border-radius:10px;z-index:9;display:none;max-width:90%}
+</style></head><body>
+<header><div><b>🌾 KisanSaathi</b><small>Smarter Farming. Healthier Crops. Better Harvests.</small></div><span class="st" id="net"></span></header>
+<main id="app"></main><div id="toast" role="status"></div>
+<nav id="nav"></nav>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast('Could not save on this device. Storage is full or blocked.');return false}}};
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',3200)}
+
+/* ---------- Seed data (prototype content, not reviewed by an agricultural authority) ---------- */
+const CROPS=[{id:'tomato',n:'Tomato',e:'🍅'},{id:'potato',n:'Potato',e:'🥔'},{id:'paddy',n:'Paddy',e:'🌾'},{id:'cotton',n:'Cotton',e:'☁️'},{id:'chilli',n:'Chilli',e:'🌶️'}];
+const NODOSE=`No verified crop-specific chemical treatment is on file. Consult your local agricultural expert for the correct dosage and application instructions.`;
+const H=c=>({id:c+'-healthy',crop:c,name:'Healthy',sev:'None',sym:`Leaf looks green and even, with no spots, curling or mould.`,cause:`No disease detected.`,org:`No treatment needed. Keep scouting your field every few days.`,prev:`Water at the base, keep the field clean, rotate crops and use healthy seed.`});
+const d=(c,k,name,sev,sym,cause,org,prev)=>({id:c+'-'+k,crop:c,name,sev,sym,cause,org,prev});
+const DIS=[
+d('tomato','early-blight','Early Blight','Moderate',`Dark brown spots with ring patterns on older leaves. Leaves turn yellow and drop.`,`Fungus Alternaria solani. Spreads in warm, humid weather.`,`Remove and destroy infected leaves. Mulch the soil. Water at the base, not on leaves.`,`Rotate crops, give plants space for airflow, use disease-free seed.`),
+d('tomato','late-blight','Late Blight','Severe',`Water-soaked grey-green patches that turn brown. White mould underneath in damp weather. Fruit rots.`,`Oomycete Phytophthora infestans. Spreads fast in cool, wet weather.`,`Remove and destroy infected plants quickly. Avoid overhead watering.`,`Use healthy seedlings, keep drainage good, avoid dense planting.`),
+d('tomato','leaf-mold','Leaf Mold','Moderate',`Pale yellow patches on top of the leaf and olive-grey mould underneath.`,`Fungus Passalora fulva. Needs high humidity and poor airflow.`,`Improve ventilation, prune lower leaves, reduce humidity.`,`Choose resistant varieties and keep leaves dry.`),
+d('tomato','bacterial-spot','Bacterial Spot','Moderate',`Small dark water-soaked spots with a yellow ring. Rough scabby spots on fruit.`,`Xanthomonas bacteria. Spread by rain splash and infected seed.`,`Remove infected leaves. Do not work in the field when plants are wet.`,`Use clean seed, rotate crops, clean tools.`),H('tomato'),
+d('potato','early-blight','Early Blight','Moderate',`Dark spots with rings on older leaves. Leaves yellow and dry.`,`Fungus Alternaria solani. Worse when plants are stressed.`,`Remove infected leaves. Keep plants well fed and watered.`,`Rotate crops, use certified seed tubers.`),
+d('potato','late-blight','Late Blight','Severe',`Dark, water-soaked blotches on leaves and stems. Tubers develop brown rot.`,`Phytophthora infestans. Cool, wet, humid weather.`,`Remove and destroy infected plants. Do not store infected tubers.`,`Use healthy seed tubers, hill soil well, ensure drainage.`),
+d('potato','common-scab','Common Scab','Mild',`Rough, corky scab patches on the tuber skin. Leaves usually look normal.`,`Streptomyces bacteria in dry, alkaline soil.`,`Keep soil moist while tubers form.`,`Use scab-free seed tubers and rotate crops.`),H('potato'),
+d('paddy','bacterial-leaf-blight','Bacterial Leaf Blight','Severe',`Yellow to white stripes from the leaf tip along the edges. Leaves dry out.`,`Xanthomonas oryzae. Spreads through water, wind and rain.`,`Drain excess water. Avoid too much nitrogen. Remove infected stubble.`,`Use resistant varieties and clean seed.`),
+d('paddy','brown-spot','Brown Spot','Moderate',`Oval brown spots with grey centres on leaves and grains.`,`Fungus Bipolaris oryzae. Linked to poor, nutrient-short soil.`,`Correct nutrient shortage with balanced fertiliser. Use healthy seed.`,`Seed treatment, balanced nutrition, good field hygiene.`),
+d('paddy','leaf-blast','Leaf Blast','Severe',`Spindle-shaped spots with grey centres and brown edges on leaves.`,`Fungus Magnaporthe oryzae. Favoured by excess nitrogen and humid nights.`,`Avoid heavy nitrogen. Keep weeds down and manage water.`,`Resistant varieties, balanced fertiliser.`),H('paddy'),
+d('cotton','bacterial-blight','Bacterial Blight','Severe',`Angular water-soaked leaf spots. Dark streaks on stems and boll rot.`,`Xanthomonas bacteria. Spread by rain splash and infected seed.`,`Remove infected plant parts. Avoid working in wet fields.`,`Use delinted, clean seed and rotate crops.`),
+d('cotton','leaf-curl','Cotton Leaf Curl','Severe',`Leaves curl up or down, veins thicken, plants stay small.`,`Virus spread by whitefly.`,`Remove infected plants. Use yellow sticky traps to monitor whitefly.`,`Control weeds, avoid late sowing, use tolerant varieties.`),
+d('cotton','alternaria-leaf-spot','Alternaria Leaf Spot','Moderate',`Small brown round spots, often with rings, that join and dry out.`,`Fungus Alternaria. Common under plant stress and humid weather.`,`Remove badly affected leaves. Keep plants well nourished.`,`Balanced fertiliser and field cleanliness.`),H('cotton'),
+d('chilli','anthracnose','Anthracnose','Severe',`Sunken dark circular spots on ripe fruit. Fruit shrivels.`,`Fungus Colletotrichum. Spreads in warm, wet weather.`,`Remove and destroy infected fruit. Do not save seed from infected plants.`,`Use clean seed, rotate crops, avoid overhead watering.`),
+d('chilli','cercospora-leaf-spot','Cercospora Leaf Spot','Moderate',`Round spots with grey centres and dark rings. Leaves yellow and fall.`,`Fungus Cercospora capsici. Warm, humid weather.`,`Remove infected leaves and avoid wetting foliage.`,`Rotate crops, space plants, use clean seed.`),
+d('chilli','leaf-curl','Leaf Curl','Severe',`Leaves curl, pucker and shrink. Plants are stunted with poor fruiting.`,`Often spread by thrips, mites or whitefly.`,`Remove badly affected plants. Monitor pests with sticky traps.`,`Control weeds, use healthy seedlings.`),H('chilli')];
+const DISTRICTS={Mandya:[12.52,76.90],Mysuru:[12.30,76.64],Hassan:[13.00,76.10],Belagavi:[15.85,74.50],Dharwad:[15.46,75.01],Raichur:[16.20,77.36],Davanagere:[14.47,75.92],Shivamogga:[13.93,75.57],Tumakuru:[13.34,77.10],Kalaburagi:[17.33,76.83]};
+const SAMPLE=Object.entries(DISTRICTS).map(([k,v],i)=>({id:'s'+i,name:`Sample Agri Store (${k})`,phone:'',district:k,taluk:'',village:'',address:`Sample record. Real address not loaded.`,lat:v[0],lng:v[1],verified:false,sample:true}));
+const crop=id=>CROPS.find(c=>c.id===id);const dis=id=>DIS.find(x=>x.id===id);
+
+/* ---------- State ---------- */
+const S={view:'home',crop:null,file:null,thumb:null,warn:[],busy:false,res:null,tf:{q:'',c:'',s:''},hf:{q:'',c:''},sf:{q:'',d:'',near:null}};
+let hist=ls.get('ks_hist',[]),consults=ls.get('ks_cons',[]),shops=ls.get('ks_shops',null)||SAMPLE,cfg=ls.get('ks_cfg',{name:'',url:'',keep:'0'});
+(function prune(){const k=+cfg.keep;if(k){const lim=Date.now()-k*864e5;const n=hist.filter(h=>h.ts>lim);if(n.length!==hist.length){hist=n;ls.set('ks_hist',hist)}}})();
+const TABS=[['home','🏠','Home'],['scan','📷','Scan'],['treat','💊','Treatments'],['shops','🏪','Shops'],['hist','🕘','History'],['prof','👤','Profile']];
+function go(v){S.view=v;if(v!=='scan')S.res=null;render();scrollTo(0,0)}
+function net(){$('#net').textContent=navigator.onLine?'● Online':'○ Offline';if(S.view==='home'||S.view==='scan')render()}
+addEventListener('online',()=>{net();toast('Back online')});addEventListener('offline',()=>{net();toast('You are offline. Saved data still works.')});
+
+function render(){
+$('#nav').innerHTML=TABS.map(t=>`<button class="${S.view===t[0]?'on':''}" onclick="go('${t[0]}')" aria-label="${t[2]}"><span>${t[1]}</span>${t[2]}</button>`).join('');
+$('#net').textContent=navigator.onLine?'● Online':'○ Offline';
+$('#app').innerHTML=({home:vHome,scan:vScan,treat:vTreat,shops:vShops,hist:vHist,prof:vProf})[S.view]();
+if(S.view==='treat')listT();if(S.view==='shops')listS();if(S.view==='hist')listH()}
+
+/* ---------- Home ---------- */
+function vHome(){const dis_=hist.filter(h=>h.did&&!h.did.endsWith('healthy')&&h.did!=='uncertain').length,ok=hist.filter(h=>h.did&&h.did.endsWith('healthy')).length;
+return `<div class="card"><h2>Welcome${cfg.name?', '+esc(cfg.name):''}</h2><p class="mut">${cfg.name?'':'You are using guest mode. Your scans stay on this device.'}</p>
+<button class="btn b" onclick="go('scan')" style="margin-top:10px">📷 Scan Crop</button></div>
+<div class="card"><div class="stats"><div class="stat"><b>${hist.length}</b><small>Total scans</small></div><div class="stat"><b>${ok}</b><small>Healthy results</small></div><div class="stat"><b>${dis_}</b><small>Disease results</small></div></div></div>
+<div class="card"><h3 style="margin-top:0">Supported crops</h3><div class="grid">${CROPS.map(c=>`<div class="crop" style="cursor:default"><span>${c.e}</span>${c.n}</div>`).join('')}</div></div>
+<div class="card"><h3 style="margin-top:0">Recent diagnoses</h3>${hist.slice(0,3).map(hRow).join('')||'<p class="mut">No scans yet. Tap Scan Crop to start.</p>'}</div>
+<div class="row"><button class="btn s" onclick="go('treat')">💊 Treatment Guide</button><button class="btn s" onclick="go('shops')">🏪 Find Agricultural Shops</button></div>
+<div class="card" style="margin-top:14px"><b>Status</b><p class="mut">Internet: ${navigator.onLine?'connected':'offline'}. Treatment guide, shops and history work offline once this page has loaded. Disease scanning is in ${cfg.url?'hosted-model':'DEMO'} mode.</p></div>`}
+
+/* ---------- Scan ---------- */
+function vScan(){
+if(S.res)return resView(S.res,true);
+let h=`<h2>Scan a crop leaf</h2><div class="card"><h3 style="margin-top:0">1. Select crop</h3><div class="grid">${CROPS.map(c=>`<button class="crop ${S.crop===c.id?'on':''}" onclick="pick('${c.id}')"><span>${c.e}</span>${c.n}</button>`).join('')}</div></div>`;
+if(S.crop){h+=`<div class="card"><h3 style="margin-top:0">2. Add a leaf photo</h3>
+<p class="mut">Take a close, sharp photo of one leaf in daylight. JPG, PNG or WebP, up to 8 MB.</p>
+<input id="cam" type="file" accept="image/*" capture="environment" hidden onchange="onFile(this)"><input id="gal" type="file" accept="image/jpeg,image/png,image/webp" hidden onchange="onFile(this)">
+<div class="row"><button class="btn o" onclick="$('#cam').click()">📷 Take photo</button><button class="btn o" onclick="$('#gal').click()">🖼️ From gallery</button></div>
+${S.thumb?`<img class="thumb" src="${S.thumb}" alt="Selected leaf preview">${S.warn.map(w=>`<div class="note">⚠️ ${esc(w)}</div>`).join('')}<div class="row"><button class="btn o" onclick="$('#cam').click()">Retake</button><button class="btn o" onclick="rmImg()">Remove</button></div>`:''}</div>`;
+if(S.thumb)h+=`<div class="card"><h3 style="margin-top:0">3. Analyse</h3>
+<label style="display:flex;gap:10px;align-items:flex-start"><input id="consent" type="checkbox" style="width:auto;margin-top:6px"><span>I agree to use this photo for analysis. ${cfg.url?'It will be sent to the configured model server.':'In demo mode it stays on this device.'}</span></label>
+<button class="btn b" id="go" onclick="analyse()" ${S.busy?'disabled':''}>${S.busy?'Analysing…':'Analyse leaf'}</button>
+${cfg.url?'':`<div class="note"><b>DEMO MODE.</b> No trained model is connected, so the result will not be a real prediction. Add a model server URL in Profile to use real analysis.</div>`}</div>`}
+return h}
+function pick(id){S.crop=id;render()}
+function rmImg(){S.file=null;S.thumb=null;S.warn=[];render()}
+function onFile(inp){const f=inp.files[0];if(!f)return;
+if(!['image/jpeg','image/png','image/webp'].includes(f.type)){toast('Use a JPG, PNG or WebP photo.');return}
+if(f.size>8*1024*1024){toast('Photo is larger than 8 MB. Choose a smaller one.');return}
+const img=new Image(),u=URL.createObjectURL(f);
+img.onload=()=>{const w=img.width,hh=img.height,sc=Math.min(1,480/Math.max(w,hh)),c=document.createElement('canvas');c.width=w*sc;c.height=hh*sc;const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
+const px=x.getImageData(0,0,c.width,c.height).data;let s=0;for(let i=0;i<px.length;i+=4)s+=(px[i]+px[i+1]+px[i+2])/3;const m=s/(px.length/4),W=[];
+if(Math.min(w,hh)<300)W.push('Photo resolution is low. Move closer to the leaf.');if(m<45)W.push('Photo is very dark. Retake in daylight.');if(m>225)W.push('Photo is overexposed. Retake in shade.');
+S.file=f;S.thumb=c.toDataURL('image/jpeg',.7);S.warn=W;URL.revokeObjectURL(u);render()};
+img.onerror=()=>toast('This image could not be read. Try another photo.');img.src=u}
+async function analyse(){
+if(!$('#consent').checked){toast('Please tick the consent box first.');return}
+S.busy=true;render();const t0=new Date();let rec={id:'r'+Date.now(),ts:Date.now(),crop:S.crop,thumb:S.thumb,alts:[]};
+try{
+if(cfg.url){
+if(!navigator.onLine)throw new Error('You are offline. Hosted analysis needs internet.');
+const fd=new FormData();fd.append('image',S.file);fd.append('crop',S.crop);
+const r=await fetch(cfg.url,{method:'POST',body:fd});if(!r.ok)throw new Error('Model server returned error '+r.status);
+const j=await r.json();let conf=+j.confidence;if(conf<=1)conf*=100;
+const m=DIS.find(x=>x.crop===S.crop&&x.name.toLowerCase()===String(j.predicted_disease||'').toLowerCase());
+rec.mode='hosted';rec.model=j.model_version||'unknown';rec.conf=conf;rec.did=m&&conf>=70?m.id:(m?m.id:'uncertain');rec.alts=(j.alternative_predictions||[]).slice(0,3);
+if(!m)rec.did='uncertain'}
+else{ /* transparent demo: picks a disease from image pixels. NOT a prediction. */
+await new Promise(r=>setTimeout(r,900));let h=0;for(let i=0;i<S.thumb.length;i+=97)h=(h*31+S.thumb.charCodeAt(i))>>>0;
+const L=DIS.filter(x=>x.crop===S.crop);rec.did=L[h%L.length].id;rec.mode='demo';rec.model='none';rec.conf=null}
+}catch(e){S.busy=false;render();toast(e.message||'Analysis failed. Try again.');return}
+S.busy=false;hist.unshift(rec);ls.set('ks_hist',hist.slice(0,60));S.res=rec;S.file=null;S.thumb=null;S.warn=[];render();scrollTo(0,0)}
+
+function tier(c){return c>=85?['HIGH','Most likely disease. High confidence is not a guarantee. Check the leaf yourself.']:c>=70?['MEDIUM','Likely disease. Please confirm with an expert before treating.']:['LOW','Uncertain result. Please consult an agricultural expert.']}
+function resView(r,live){
+const D=dis(r.did),c=crop(r.crop);let h=live?`<button class="btn o" onclick="S.res=null;S.crop=null;render()">← New scan</button>`:'';
+h+=`<div class="card"><p class="mut">${c.e} ${c.n} · ${new Date(r.ts).toLocaleString()}</p>${r.thumb?`<img class="thumb" src="${r.thumb}" alt="Scanned leaf">`:''}`;
+if(r.mode==='demo')h+=`<div class="note"><b>DEMO MODE – not a real AI prediction.</b> This result was picked from the photo for demonstration only. Do not treat or spray based on it. Confidence is not available in demo mode.</div>`;
+if(!D){h+=`<h2>Uncertain result</h2><p>The model could not identify this leaf reliably. Please retake the photo or consult an expert.</p>`}
+else{h+=`<h2>${D.name} <span class="badge ${D.sev==='None'?'ok':'sev'}">${D.sev==='None'?'Healthy':D.sev+' severity'}</span></h2>`;
+if(r.mode==='hosted'){const t=tier(r.conf);h+=`<p><span class="badge">${t[0]} · ${r.conf.toFixed(0)}%</span> <span class="mut">Model ${esc(r.model)}</span></p><p>${t[1]}</p>${r.alts.length?`<p class="mut">Other possibilities: ${r.alts.map(a=>esc(a.disease||a.predicted_disease||JSON.stringify(a))).join(', ')}</p>`:''}`}
+h+=`<h3>Symptoms</h3><p>${D.sym}</p><h3>Possible causes</h3><p>${D.cause}</p><h3>Recommended next action</h3><p>${r.mode==='demo'?'Treat this as an example only. Scan again with a connected model or ask an expert.':D.sev==='None'?'No action needed. Keep monitoring.':'Confirm the diagnosis with an expert before applying any treatment.'}</p>
+<h3>Organic treatment</h3><p>${D.org}</p><h3>Chemical treatment</h3><p>${NODOSE}</p><h3>Prevention</h3><p>${D.prev}</p>
+<p class="mut" style="margin-top:12px">Source: prototype seed data. Last reviewed: not yet reviewed.</p>`}
+h+=`</div>${r.did==='uncertain'||D&&D.sev!=='None'?consultForm(r):''}`;return h}
+function consultForm(r){return `<div class="card"><h3 style="margin-top:0">Ask an expert</h3><p class="mut">Requests are saved on this device only. No expert account is connected in this prototype, so you will not receive a reply.</p>
+<select id="cd">${Object.keys(DISTRICTS).map(k=>`<option>${k}</option>`).join('')}</select><textarea id="cn" rows="3" placeholder="Describe what you see (optional)"></textarea>
+<button class="btn b" onclick="sendC('${r.id}')">Save consultation request</button></div>`}
+function sendC(id){const r=hist.find(x=>x.id===id);consults.unshift({id:'c'+Date.now(),scan:id,crop:r.crop,did:r.did,district:$('#cd').value,note:$('#cn').value.slice(0,500),status:'Submitted',ts:Date.now()});ls.set('ks_cons',consults);toast('Request saved with status Submitted')}
+
+/* ---------- Treatments ---------- */
+function vTreat(){return `<h2>Treatment Guide</h2><input id="tq" placeholder="Search disease or crop" value="${esc(S.tf.q)}" oninput="S.tf.q=this.value;listT()">
+<div class="row"><select onchange="S.tf.c=this.value;listT()"><option value="">All crops</option>${CROPS.map(c=>`<option value="${c.id}" ${S.tf.c===c.id?'selected':''}>${c.n}</option>`).join('')}</select>
+<select onchange="S.tf.s=this.value;listT()"><option value="">All severity</option>${['None','Mild','Moderate','Severe'].map(s=>`<option ${S.tf.s===s?'selected':''}>${s}</option>`).join('')}</select></div><div id="tl"></div>`}
+function listT(){const q=S.tf.q.toLowerCase(),L=DIS.filter(x=>(!S.tf.c||x.crop===S.tf.c)&&(!S.tf.s||x.sev===S.tf.s)&&(!q||(x.name+' '+crop(x.crop).n).toLowerCase().includes(q)));
+$('#tl').innerHTML=L.map(x=>`<details><summary>${crop(x.crop).e} ${crop(x.crop).n} – ${x.name}</summary><h3>Symptoms</h3><p>${x.sym}</p><h3>Organic treatment</h3><p>${x.org}</p><h3>Chemical treatment</h3><p>${NODOSE}</p><h3>Prevention</h3><p>${x.prev}</p><p class="mut">Severity: ${x.sev}. Source: prototype seed data. Last reviewed: not yet reviewed.</p></details>`).join('')||'<p class="mut">No treatments match. Clear a filter to see more.</p>'}
+
+/* ---------- Shops ---------- */
+function vShops(){return `<h2>Agricultural Shops</h2><div class="note">Shops marked <b>Sample</b> are placeholder records, not real businesses. Import a verified Karnataka dealer CSV in Profile.</div>
+<input placeholder="Search by shop name" value="${esc(S.sf.q)}" oninput="S.sf.q=this.value;listS()"><div class="row"><select onchange="S.sf.d=this.value;listS()"><option value="">All districts</option>${[...new Set([...Object.keys(DISTRICTS),...shops.map(s=>s.district)])].filter(Boolean).sort().map(k=>`<option ${S.sf.d===k?'selected':''}>${esc(k)}</option>`).join('')}</select><button class="btn s" onclick="near()">📍 Shops near me</button></div><div id="sl"></div>`}
+function near(){if(!navigator.geolocation){toast('Location is not available on this device.');return}navigator.geolocation.getCurrentPosition(p=>{S.sf.near=[p.coords.latitude,p.coords.longitude];listS()},()=>toast('Location permission was not granted.'),{timeout:10000})}
+function km(a,b,c,d){const r=x=>x*Math.PI/180,h=Math.sin(r(c-a)/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;return 12742*Math.asin(Math.sqrt(h))}
+function listS(){const q=S.sf.q.toLowerCase();let L=shops.filter(s=>(!S.sf.d||s.district===S.sf.d)&&(!q||s.name.toLowerCase().includes(q)));
+if(S.sf.near){L=L.map(s=>({...s,dist:km(S.sf.near[0],S.sf.near[1],s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist)}
+$('#sl').innerHTML=L.slice(0,40).map(s=>`<div class="card"><b>${esc(s.name)}</b> <span class="badge ${s.verified?'ok':'demo'}">${s.sample?'Sample':s.verified?'Verified':'Unverified'}</span>
+<p class="mut">${esc([s.village,s.taluk,s.district].filter(Boolean).join(', '))}${s.dist!=null?' · '+s.dist.toFixed(0)+' km away':''}</p><p>${esc(s.address)}</p>
+<div class="row">${s.phone?`<a class="btn" href="tel:${esc(s.phone)}">📞 Call Now</a>`:`<button class="btn" disabled>No phone on file</button>`}<a class="btn o" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}">🧭 Get Directions</a></div></div>`).join('')||'<p class="mut">No shops match. Clear a filter to see more.</p>'}
+function importCsv(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const rows=String(r.result).trim().split(/\r?\n/).map(l=>l.split(',').map(x=>x.trim().replace(/^"|"$/g,'')));const hd=rows.shift().map(x=>x.toLowerCase());const g=(r,k)=>r[hd.indexOf(k)]||'';
+const out=rows.map((r,i)=>({id:'i'+Date.now()+i,name:g(r,'name'),phone:g(r,'phone'),district:g(r,'district'),taluk:g(r,'taluk'),village:g(r,'village'),address:g(r,'address'),lat:parseFloat(g(r,'lat')),lng:parseFloat(g(r,'lng')),verified:g(r,'verified').toLowerCase()==='yes'})).filter(s=>s.name&&isFinite(s.lat)&&isFinite(s.lng));
+if(!out.length){toast('No valid rows. Needed columns: name, phone, district, taluk, village, address, lat, lng, verified.');return}
+shops=out.concat(shops.filter(s=>!s.sample));ls.set('ks_shops',shops);toast(out.length+' shops imported');render()};r.readAsText(f)}
+
+/* ---------- History ---------- */
+function hRow(h){const D=dis(h.did),c=crop(h.crop);return `<div class="hi card" onclick="openH('${h.id}')">${h.thumb?`<img src="${h.thumb}" alt="">`:`<div class="ph">${c.e}</div>`}<div style="flex:1"><b>${D?D.name:'Uncertain'}</b><div class="mut">${c.n} · ${new Date(h.ts).toLocaleDateString()} ${h.mode==='demo'?'· DEMO':''}</div></div><button class="btn d" style="padding:8px 12px" aria-label="Delete scan" onclick="event.stopPropagation();delH('${h.id}')">🗑</button></div>`}
+function vHist(){return `<h2>Scan History</h2><input placeholder="Search scans" value="${esc(S.hf.q)}" oninput="S.hf.q=this.value;listH()"><select onchange="S.hf.c=this.value;listH()"><option value="">All crops</option>${CROPS.map(c=>`<option value="${c.id}" ${S.hf.c===c.id?'selected':''}>${c.n}</option>`).join('')}</select><div id="hl"></div>
+${hist.length?`<button class="btn d b" onclick="delAll()">Delete all history</button>`:''}
+<h2 style="margin-top:22px">Expert requests</h2>${consults.map(c=>`<div class="card"><b>${crop(c.crop).n}</b> <span class="badge">${c.status}</span><p class="mut">${esc(c.district)} · ${new Date(c.ts).toLocaleDateString()}</p><p>${esc(c.note)||'<span class="mut">No description</span>'}</p></div>`).join('')||'<p class="mut">No requests yet.</p>'}`}
+function listH(){const q=S.hf.q.toLowerCase(),L=hist.filter(h=>(!S.hf.c||h.crop===S.hf.c)&&(!q||((dis(h.did)?.name||'uncertain')+' '+crop(h.crop).n).toLowerCase().includes(q)));$('#hl').innerHTML=L.map(hRow).join('')||'<p class="mut">No scans yet. Tap Scan to analyse a leaf.</p>'}
+function openH(id){S.res=hist.find(h=>h.id===id);S.view='scan';render();scrollTo(0,0)}
+function delH(id){hist=hist.filter(h=>h.id!==id);ls.set('ks_hist',hist);render();toast('Scan deleted')}
+function delAll(){if(!confirm('Delete all scan history from this device?'))return;hist=[];ls.set('ks_hist',hist);render()}
+
+/* ---------- Profile ---------- */
+function vProf(){return `<h2>Profile</h2><div class="card"><label>Your name (optional)</label><input id="pn" value="${esc(cfg.name)}" placeholder="Name"><label>Keep scan history</label><select id="pk">${[['0','Until I delete it'],['30','30 days'],['90','90 days']].map(o=>`<option value="${o[0]}" ${cfg.keep===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>
+<label>Model server URL (CROP_AI_API_URL)</label><input id="pu" value="${esc(cfg.url)}" placeholder="https://… (leave empty for demo mode)"><p class="mut">The server must accept a POST with fields <code>image</code> and <code>crop</code> and return JSON with <code>predicted_disease</code>, <code>confidence</code>, <code>model_version</code>. Never put private API keys here.</p><button class="btn b" onclick="saveP()">Save settings</button></div>
+<div class="card"><h3 style="margin-top:0">Import shops (CSV)</h3><p class="mut">Columns: name, phone, district, taluk, village, address, lat, lng, verified (yes/no). Use only verified records.</p><input type="file" accept=".csv,text/csv" onchange="importCsv(this)"></div>
+<div class="card"><h3 style="margin-top:0">Privacy</h3><p class="mut">This prototype keeps everything on this device. Photos are used only when you tap Analyse and consent. Location is requested only when you tap Shops near me.</p><button class="btn d b" onclick="wipe()">Delete all my data</button></div>
+<div class="card"><h3 style="margin-top:0">Prototype limits</h3><p class="mut">Not included: accounts, expert and admin roles, Supabase backend, cloud sync, installable app mode and a trained model. These need a hosted backend and credentials.</p></div>`}
+function saveP(){cfg={name:$('#pn').value.trim().slice(0,60),url:$('#pu').value.trim(),keep:$('#pk').value};if(cfg.url&&!/^https:\/\//.test(cfg.url)){toast('Model URL must start with https://');return}ls.set('ks_cfg',cfg);toast('Settings saved');render()}
+function wipe(){if(!confirm('Delete scans, requests, imported shops and settings from this device?'))return;['ks_hist','ks_cons','ks_shops','ks_cfg'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});hist=[];consults=[];shops=SAMPLE;cfg={name:'',url:'',keep:'0'};render();toast('All data deleted')}
+render();
+</script></body></html>
